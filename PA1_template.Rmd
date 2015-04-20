@@ -1,25 +1,151 @@
+
 ---
 title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
 ---
-
+Careful: knitr, ggplot2 and xtable packages are needed.
+```{r setoptions, echo=FALSE}
+#knitr, ggplot2 and xtable packages are needed.
+suppressWarnings(library(knitr))
+opts_chunk$set(echo=TRUE)
+suppressWarnings(library (ggplot2))
+suppressWarnings(library (xtable))
+suppressWarnings(library (lattice))
+```
 
 ## Loading and preprocessing the data
 
-
+The following code loads the data into a ***data*** variable and preprocess the *date* information transforming it into a non-factor format.
+```{r loading}
+data<-read.csv("./data/activity.csv");
+data$date=as.Date(data$date);
+Days=unique(as.Date(data$date));
+```
 
 ## What is mean total number of steps taken per day?
 
+The total number of the steps and the average of each can be computed by:
+```{r total}
+Steps=c(rep(0,length(Days)))
+Average=c(rep(0,length(Days)))
+TD<-data.frame(Days,Steps,Average);
+for (i in 1:length(Days)){
+    TD$Steps[i]<-sum(data[data$date==Days[i],"steps"],na.rm=TRUE)
+    TD$Average[i]<-sum(data[data$date==Days[i],"steps"],na.rm=TRUE)/sum(data$date==Days[1],na.rm=TRUE)
+}
 
+```
+
+The following code plots the total amount of the steps given some day.
+```{r plot}
+Steps<-TD$Steps;
+histData<-data.frame(Steps,Days)
+p <- ggplot(histData, aes(Days,Steps)) + geom_histogram(stat="identity")
+print(p)
+
+```
+
+
+By the other side, the mean of data per day and the median of the whole data are computed and organized in a table by:
+```{r mean, results='asis'}
+Mean=c(rep(0,length(Days)))
+TD2<-data.frame(Days,Mean)
+for (i in 1:length(Days)){
+    TD2$Mean[i]<-round(mean(data[data$date==Days[i],"steps"],na.rm=TRUE),digits=4)
+    #remove the Nan
+    if(is.nan(TD2$Mean[i])) TD2$Mean[i]=0;
+}
+
+
+print.xtable(xtable(sapply(TD2,as.character),align="ccc"),type="html")
+```
+And:
+```{r MedianC, results='hide'}
+Median=median(histData$Steps,na.rm=TRUE);
+Mean=mean(histData$Steps,na.rm=TRUE);
+```
+
+The median of the whole data is equal to ***`r Median`***. 
+The mean of the whole data is equal to ***`r Mean`***.
 
 ## What is the average daily activity pattern?
 
+The code below can plot a time series in which the relation between the average of the steps and the interval is given.
+
+```{r}
+intervalSteps <- aggregate(steps ~ interval, data, mean)
+g<-ggplot(intervalSteps,aes(interval,steps))+geom_line()
+print(g)
+maxim<-intervalSteps[intervalSteps$steps==max(intervalSteps$steps),"interval"]
+```
+
+The interval with a maximum of the averaged steps is: ***`r maxim`***
 
 
 ## Imputing missing values
+As we want to know the total number of NAs in the dataset we can perform:
+```{r NAcomputing}
+counter<-sum(is.na(data))
+```
 
+And the total of NAs found is ***`r counter`***.
 
+To replace the NAs in the data we can execute the next code:
+```{r NA }
+tNAs<-is.na(data$steps);
+newData<-data;
+for (i in 1:length(tNAs)){
+    if (tNAs[i]) newData[i,"steps"]<-intervalSteps[intervalSteps$interva==newData[i,"interval"],"steps"]    
+}
+
+```
+
+The effect of the previous procedure can be seen on performing:
+
+```{r mean2, results='asis'}
+Steps=c(rep(0,length(Days)))
+Average=c(rep(0,length(Days)))
+TD<-data.frame(Days,Steps,Average);
+for (i in 1:length(Days)){
+    TD$Steps[i]<-sum(newData[newData$date==Days[i],"steps"],na.rm=TRUE)
+    TD$Average[i]<-sum(newData[newData$date==Days[i],"steps"],na.rm=TRUE)/sum(newData$date==Days[1],na.rm=TRUE)
+}
+
+Steps<-TD$Steps;
+histData<-data.frame(Steps,Days)
+p <- ggplot(histData, aes(Days,Steps)) + geom_histogram(stat="identity")
+print(p)
+```
+
+And:
+
+```{r MedianC2, results='hide'}
+Median2=median(histData$Steps,na.rm=TRUE);
+Mean2=mean(histData$Steps,na.rm=TRUE);
+```
+
+Being the new median and the new mean ***`r Median2`***, ***`r Mean2`*** respectively.
+
+There is a clear difference in the median because now the mean ***`r Mean2`*** is equal to the median ***`r Median2`***.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+By setting the days into a new factor variable we can extract information about the question.
+The following code creates the factor variable day in the dataset. The levels in the factor may be assigned by the criteria: weekday or weekend.
+It also plots a comparison between both information, weekdays and weekends.
+```{r Final}
+sunday=0
+newData[,"day"]<-as.POSIXlt(newData$date)$wday;
+newData[newData$day==0,"day"]="weekend";
+newData[newData$day==6,"day"]="weekend";
+newData[newData$day==5,"day"]="weekday";
+newData[newData$day==4,"day"]="weekday";
+newData[newData$day==3,"day"]="weekday";
+newData[newData$day==2,"day"]="weekday";
+newData[newData$day==1,"day"]="weekday";
+newData$day<-factor(newData$day,labels=c("weekday","weekend"))
+
+intervalSteps2 <- aggregate(steps ~ interval+day, newData, mean)
+xyplot(steps~interval|day,data=intervalSteps2,layout=c(1,2),type="l",xlab="Interval",ylab="Steps")
+```
