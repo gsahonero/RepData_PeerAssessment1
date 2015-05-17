@@ -55,7 +55,7 @@ print.xtable(xtable(sapply(TD2,as.character),align="ccc"),type="html")
 ```
 
 <!-- html table generated in R 3.1.2 by xtable 1.7-4 package -->
-<!-- Sun Apr 19 22:11:49 2015 -->
+<!-- Sun May 17 18:07:38 2015 -->
 <table border=1>
 <tr> <th>  </th> <th> Days </th> <th> Mean </th>  </tr>
   <tr> <td align="center"> 1 </td> <td align="center"> 2012-10-01 </td> <td align="center"> 0 </td> </tr>
@@ -197,7 +197,7 @@ Median2=median(histData$Steps,na.rm=TRUE);
 Mean2=mean(histData$Steps,na.rm=TRUE);
 ```
 
-Being the new median and the new mean ***1.0766189\times 10^{4}***, ***1.0766189\times 10^{4}*** respectively.
+Being the new median and the new mean ***1.0766189\times 10^{4}*** , ***1.0766189\times 10^{4}*** respectively.
 
 There is a clear difference in the median because now the mean ***1.0766189\times 10^{4}*** is equal to the median ***1.0766189\times 10^{4}***.
 

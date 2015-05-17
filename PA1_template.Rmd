@@ -126,7 +126,7 @@ Median2=median(histData$Steps,na.rm=TRUE);
 Mean2=mean(histData$Steps,na.rm=TRUE);
 ```
 
-Being the new median and the new mean ***`r Median2`***, ***`r Mean2`*** respectively.
+Being the new median and the new mean ***`r Median2`*** , ***`r Mean2`*** respectively.
 
 There is a clear difference in the median because now the mean ***`r Mean2`*** is equal to the median ***`r Median2`***.
 
